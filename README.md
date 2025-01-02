@@ -298,7 +298,8 @@ Zero-knowledge approaches can hide tile details while still proving correctness.
 **How do I handle dynamic metadata on NFT marketplaces?**
 
 Many marketplaces cache data. You might rely on a metadata “refresh” button, or certain platforms that honor dynamic metadata more readily.
-Why eventually deploy on Ethereum?
+
+**Why eventually deploy on Ethereum?**
 
 Ethereum has historical significance and is widely considered the most “permanent” chain. Anchoring your final state or storing your final contract on Ethereum helps preserve the art for the long term.
 ## 10. Conclusion & Next Steps
