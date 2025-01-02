@@ -1,7 +1,7 @@
 # HITBOX: A Conceptual On-Chain Platformer
 
-**Authors**: raulonastool  
-**Date**: 12/31/2024
+**Authors**: [Your Name]  
+**Date**: [Date]
 
 ---
 
@@ -35,66 +35,84 @@
    2. [Randomness Sources](#randomness-sources)  
    3. [NFT Metadata Updates & Marketplace Caching](#nft-metadata-updates--marketplace-caching)  
    4. [Security Concerns](#security-concerns)  
+   5. [StarkNet or Other L2 Options](#starknet-or-other-l2-options)  
 7. [Potential Extensions & Front-Ends](#potential-extensions--front-ends)  
 8. [Implementation Roadmap](#implementation-roadmap)  
+   1. [Phase 1: Prototype](#phase-1-prototype)  
+   2. [Phase 2: Full Deployment](#phase-2-full-deployment)  
 9. [FAQ / Common Questions](#faq--common-questions)  
+10. [Conclusion & Next Steps](#conclusion--next-steps)
 
 ---
 
 ## 1. Project Overview
 
-**Hitbox** is a conceptual blockchain-based platformer game where the **“game world”** lives entirely on-chain. It is simultaneously a **code-based art installation** and a **collaborative decentralized game**. We rely on smart contracts to define:
+**Hitbox** is a conceptual blockchain-based platformer game where the **game world** lives on-chain as a cryptographic commitment (Merkle root or advanced ZK structure). It doubles as both a **code-based art installation** and a **decentralized, collaborative game**. Core elements:
 
-- A **2D grid** map larger than the screen (mimicking retro platformers).
-- A **character box** that moves through this grid.
-- A **32×32 pixel window** that follows the character as the “camera.”
-- Various **obstacle boxes** (some stationary, some mobile).
-- A partially **hidden world** that is only revealed as the character explores (using zero-knowledge or Merkle proofs).
-- A **visual NFT** that updates based on the on-chain state, representing the view through the current camera window.
+- A **2D grid** map, larger than any single visible screen (retro platformer style).  
+- A **character box** that can be moved by NFT holders.  
+- A **32×32 window** following the character, effectively acting as the game’s “camera.”  
+- Various **obstacle boxes** (some stationary, some on predetermined or random paths).  
+- A partially **hidden world**, revealed only when the character explores new tiles. The user (or a front-end) must provide **proof** to confirm each newly revealed tile is valid.  
+- An **on-chain SVG** that updates based on game state, forming the NFT artwork on marketplaces.
+
+**The gameplay dynamic** is reminiscent of “Twitch Plays Pokémon,” as all NFT holders collectively control a single character. This fosters a sense of communal chaos and creative exploration.
 
 ---
 
 ## 2. Conceptual Goals
 
-1. **Code as Art**: Highlighting how smart contracts, protocol-level truth, and cryptographic primitives can become a form of artistic expression.  
-2. **Decentralized Collaboration**: Only **NFT holders** can move the character, yet everyone can observe the game’s progress.  
-3. **Hidden but Proven**: The larger world is unknown but verifiably exists. Movement reveals previously hidden areas.  
-4. **Reinterpretable**: The code is open-source, allowing anyone to build alternative visual interfaces or expansions.
+1. **Code as Art**  
+   - Emphasize the smart contract logic, protocol-level truth, and cryptographic primitives as **creative media**.
+
+2. **Decentralized Collaboration**  
+   - Only **NFT holders** can move the character; everyone else is a spectator. Similar to “Twitch Plays,” it’s a social experiment in mass coordination.
+
+3. **Hidden but Provable**  
+   - The larger world is unknown but guaranteed to exist. **Merkle or zero-knowledge proofs** ensure tiles are revealed consistently with the original map, without fully exposing it from the start.
+
+4. **Multiple Visual Interpretations**  
+   - The code is open-source, so anyone can design a front-end to represent the hidden world in different styles or “skins.” Think of how **Loot** derivatives offer multiple “visual layers” over the same data.
+
+5. **Everlasting Ethereum Deployment**  
+   - Ultimately, the canonical version of **Hitbox** will live on Ethereum—the widely trusted, “granddaddy” chain for on-chain art. This ensures the piece endures indefinitely, barring extreme catastrophes.
+
+6. **Phased Approach to Zero-Knowledge**  
+   - In early phases, store the map as a hashed or Merkle-rooted data structure. Users reveal tiles with a Merkle proof.  
+   - In more advanced phases, integrate a full **zero-knowledge approach** (potentially on StarkNet or another ZK-Rollup), anchoring only the final states or periodic checkpoints on Ethereum.
 
 ---
 
 ## 3. Key Components & Terminology
 
 ### 3.1 Game World
-- A 2D grid representing the play area.  
-- Potentially large (e.g., 512×512 tiles, or an arbitrary size).  
-- For on-chain storage, we consider **Merkle tree** commitments or compressed representations.
+- Represents a 2D grid of arbitrary size, e.g., 512×512.  
+- **Hidden** to players except for revealed tiles.  
+- Stored off-chain or partially on-chain as a cryptographic commitment (Merkle root).
 
 ### 3.2 Character Box
-- The “player” object.  
-- Only one character box exists in the primary game state.  
-- Coordinates: (`x`, `y`), stored on-chain.  
-- Moves upon user commands (NFT holders call `moveLeft()`, `moveRight()`, `jump()`, etc.).
+- The “player” entity, uniquely controlled by holders of a special NFT.  
+- Has coordinates `(x, y)` stored in the game contract.  
+- Moves according to user commands (e.g., `moveLeft()`, `jump()`, etc.).
 
 ### 3.3 Perspective Window
-- A 32×32 view that centers around the character box.  
-- Defines which part of the world is currently “visible” in the on-chain NFT representation.  
-- Conceptually, a bounding box around (`character.x - 16`, `character.y - 16`) to (`character.x + 16`, `character.y + 16`).
+- Conceptual “camera” that frames a **32×32** region around the character.  
+- This is what the on-chain SVG (NFT) displays at any given moment.
 
 ### 3.4 Obstacle Boxes
-- Blocks or enemies in the game world that might be stationary or move in periodic/pseudo-random patterns.  
-- Collision with an obstacle triggers a **reset** of the character’s position.
+- Either stationary or moving obstacles.  
+- Some might have random or cyclical movement patterns.  
+- Colliding with them triggers a **reset** of the character’s position.
 
 ### 3.5 On-Chain Artwork (NFT)
-- An ERC721 (or ERC1155) contract that represents the Hitbox “game controller.”  
-- Holds an **on-chain SVG** that reflects the current state.  
-- The SVG is updated whenever the character moves or a collision occurs.  
-- Marketplaces display the NFT as a dynamically generated artwork.
+- An ERC721 or ERC1155 contract that **mints** tokens to grant movement rights.  
+- Holds a dynamic **on-chain SVG** reflecting the game state.  
+- Marketplaces display the **Hitbox** NFT with updated imagery, showing the 32×32 camera view.
 
 ### 3.6 Hidden World + Zero-Knowledge
-- The entire map or large segments are not openly stored in a plain array.  
-- A **Merkle root** or **zk-proof** approach ensures authenticity without revealing all tiles at once.  
-- On each move, newly revealed tiles are proven to match the original design.
+- The full map or large segments remain hidden.  
+- A **Merkle root** or zero-knowledge approach proves each revealed tile matches the original, preventing tampering.  
+- For a truly private reveal, L2 solutions like **StarkNet** can handle big computations or advanced ZK logic, periodically anchoring the final “truth” to Ethereum.
 
 ---
 
@@ -102,229 +120,190 @@
 
 ### 4.1 High-Level Flow
 
-1. **Initialize Game**  
-   - Deploy `HitboxGame` contract with a world Merkle root (or some data structure) describing the hidden map.  
-   - Deploy `HitboxNFT` contract to manage the NFT(s) granting movement rights.
+1. **Initialize**  
+   - Deploy `HitboxGame` contract with a **Merkle root** (or similar) representing the entire map.  
+   - Deploy `HitboxNFT` contract for tokenized control (movement rights).
 
 2. **Mint NFT**  
-   - User(s) buy or acquire the NFT from `HitboxNFT`.  
-   - Now they can interact with `HitboxGame`.
+   - Collectors purchase or mint the NFT, which grants them the right to call `moveCharacter()`.
 
-3. **Character Movement**  
-   - An NFT holder calls `moveCharacter(direction)`.  
-   - The game contract updates the character’s position, checks collisions, updates on-chain state.  
-   - If new map tiles are revealed, the user provides a Merkle proof or zero-knowledge proof.
+3. **User Movement**  
+   - A token holder calls `moveCharacter(direction)` on the `HitboxGame`.  
+   - The game contract updates the character’s position, checks for collisions, and logs the state change.
 
-4. **On-Chain SVG Update**  
-   - After each state change, the NFT contract’s `tokenURI()` references the `HitboxGame` state to build a fresh SVG.  
-   - The displayed window is the 32×32 region around the character.
+4. **Reveal Tiles (Proof Submission)**  
+   - When the character steps onto new, previously hidden tiles, the **caller** provides the tile data plus a **Merkle (or ZK) proof**.  
+   - The contract verifies that this tile data is consistent with the on-chain Merkle root.  
+   - If valid, the tile is now considered “revealed.”
 
-5. **Observing the Game**  
-   - Anyone can read the state from the blockchain or view the NFT.  
-   - Only NFT holders can push the game forward.
+5. **On-Chain SVG Update**  
+   - The `HitboxNFT` references `HitboxGame` state to build an updated 32×32 pixel window around the character.  
+   - The NFT’s `tokenURI()` returns a fresh **data:` SVG** for marketplaces.
+
+6. **Observing the Game**  
+   - Anyone can watch the state changes or see the NFT updates.  
+   - Only NFT holders can direct the character’s movements and reveal new areas.
 
 ### 4.2 Smart Contracts
 
-There are two primary contracts:
+1. **`HitboxGame`**  
+   - Contains the **Merkle root** referencing the hidden world, plus character/obstacle data.  
+   - Manages movement, collisions, tile reveal logic, and events.
 
-1. **`HitboxGame`** (core logic)  
-   - Stores the map data reference (Merkle root), character coordinates, obstacle positions, etc.  
-   - Implements movement, collision, and events.
-
-2. **`HitboxNFT`** (ERC721 or ERC1155)  
-   - Mints tokens that grant movement rights.  
-   - Renders the current state as an on-chain SVG in `tokenURI()`.
+2. **`HitboxNFT`**  
+   - Implements ERC721 or ERC1155 for tokenized access.  
+   - Generates a dynamic SVG in `tokenURI()` that visualizes the 32×32 window based on the game’s state.
 
 ### 4.3 Data Structures & State
 
 ```solidity
 contract HitboxGame {
-    // The map is stored as a Merkle root or some compressed representation.
+    // A Merkle root or other cryptographic commitment to the hidden world.
     bytes32 public worldRoot;
 
-    // The character's position.
-    struct Position { 
-        uint256 x; 
-        uint256 y; 
+    // Main character position.
+    struct Position {
+        uint256 x;
+        uint256 y;
     }
     Position public characterPosition;
 
-    // Obstacles: stationary or dynamic.
+    // Obstacles (can be stationary or dynamic).
     struct Obstacle {
         Position currentPosition;
-        // pattern definition or random seed
+        // Additional fields, e.g., movement pattern or random seed.
     }
     mapping(uint256 => Obstacle) public obstacles;
 
-    // The 'window' is conceptual; we compute it using characterPosition.
+    // 'window' is conceptual, derived from characterPosition in read-only calls.
 }
 ```
----
 
 ### 4.4 Gameplay Logic
-
-- **Movement**: Functions like `moveLeft()`, `moveRight()`, `jump()`.  
-- **Collision Check**: Compare the new character position with obstacle positions.  
-- **Reset**: If a collision occurs, reset the character to initial coordinates.
-
+Movement (e.g., moveLeft(), moveRight(), jump()):
+Adjust (x, y) accordingly.
+Check for collisions with obstacles or boundaries.
+Collision Check: If the new position overlaps an obstacle, reset the character to (startX, startY).
+Tile Reveal:
+If the new position or adjacent positions are unrevealed tiles, the caller provides tile data + a Merkle/zk proof.
+The contract verifies the proof. If correct, the tile is marked as “revealed.”
 ### 4.5 On-Chain SVG Rendering
-
-- The NFT contract queries the `HitboxGame` contract for relevant data (character position, visible tiles, obstacles in range).  
-- Generates an **SVG** snippet for the 32×32 slice.  
-- Encodes the SVG in a base64 `data:` URI for `tokenURI()`.
-
+HitboxNFT.tokenURI() calls HitboxGame to determine the 32×32 region’s data.
+Builds an SVG snippet representing this slice of the world.
+Returns a base64-encoded data: URI for marketplace display.
 ### 4.6 ZK / Merkle Tree Mechanics
-
-- **Merkle Tree**: The map is chunked into tiles or blocks. Each block is hashed; these hashes combine into a Merkle root.  
-- **Proof**: When the character enters a new region, the user provides a Merkle proof to show the newly revealed data matches the root.  
-- **Zero-Knowledge** (Optional / Advanced): For privacy, store the map in a ZK-friendly structure (e.g., zk-SNARK or STARK) so that block validity can be proven without revealing everything.
-
----
-
+Commitment: A Merkle root representing the entire map is stored in worldRoot.
+Proof Submission: The caller sends (tileData, proof[]) to prove the tile is part of the original map.
+Contract Verification:
+The contract recomputes hashes from tileData up through the proof’s path.
+If the final hash matches worldRoot, the tile is accepted as genuine.
+(Optionally) a zero-knowledge circuit can hide certain tile properties if privacy is desired.
+Off-Chain Storage: The raw tile data is typically stored off-chain. The contract only needs the final proof to validate correctness.
 ## 5. Detailed Functionality
-
 ### 5.1 Movement & Collision
-
-```solidity
-function moveCharacter(Direction dir) external onlyNFTCollector payable {
-    // 1. Ensure msg.value covers movement fee (if any).
-    // 2. Compute new position.
-    // 3. Check collision with obstacles:
-    //    - If collision, reset characterPosition.
-    // 4. Otherwise, update characterPosition.
-    // 5. Emit event (CharacterMoved, ObstaclesUpdated).
+```
+function moveCharacter(Direction dir, TileReveal[] calldata reveals) external onlyNFTCollector payable {
+    // 1. (Optional) Check msg.value against any required fee.
+    // 2. Update characterPosition based on dir (left, right, up, down, jump).
+    // 3. Check collisions (if collision, reset characterPosition).
+    // 4. For each unrevealed tile in 'reveals', verify proof against worldRoot.
+    // 5. Mark valid tiles as 'revealed' and emit events.
+    // 6. Emit CharacterMoved event.
 }
 ```
 
-- Directions could be an enum:
-  ```solidity
-  enum Direction { Left, Right, Up, Down, Jump }
-  ```
-- For a classic platformer “jump,” add more complex logic (gravity, vertical arcs, etc.).
-
+Direction could be an enum ({ Left, Right, Up, Down, Jump }).
+TileReveal might contain (x, y, tileData, proof[]).
 ### 5.2 Obstacle Behavior
-
-- **Stationary**: Simply store the obstacle’s `(x, y)`.  
-- **Dynamic**: For instance, obstacles move left/right or follow a pseudo-random path each “tick” or each time the player moves.  
-- Implementation detail:
-  - Either update obstacles on every player move, or include a dedicated function to progress obstacle states.
-
+Stationary: (x, y) never changes.
+Dynamic: Could shift every move (e.g., left-to-right) or use random seeds.
+Updating obstacles might happen each time moveCharacter() is called, or in a separate “tick” method.
 ### 5.3 Reset Conditions
-
-- If `characterPosition` overlaps with an obstacle, reset `characterPosition` to `(startX, startY)`.  
-- (Optional) Track total collisions in the contract to display in metadata or for gameplay logic.
-
+If the new (x, y) overlaps any obstacle, the character position reverts to (startX, startY).
+(Optional) track collision count for stats or NFT metadata.
 ### 5.4 Access Control
-
-- A modifier `onlyNFTCollector()` ensures only token holders can move the character.  
-- If multiple NFTs exist, define whether each NFT entitles the holder to a certain number of moves or unlimited moves.
-
+A modifier onlyNFTCollector() ensures only holders of the Hitbox NFT can invoke character movement.
+If multiple NFTs exist, define whether each NFT grants a single move per block or unlimited moves, etc.
 ### 5.5 Fee Structure
-
-- An optional fee per move. Potential uses:
-  - Funding further development or community treasury.  
-  - Incentivizing puzzle-solving.  
-  - Creating a scarcity mechanism.
-
+Optional per-move fee or gas subsidy, used to fund further development or reduce spam.
+Could be managed within moveCharacter().
 ### 5.6 Event Emission
-
-```solidity
+```
 event CharacterMoved(uint256 x, uint256 y);
 event CollisionDetected(uint256 obstacleId);
-event TilesRevealed(bytes32[] merkleProof);
-```
-
-- These events allow off-chain indexers or UIs to track progress.
-
+event TileRevealed(uint256 x, uint256 y);
 ---
-
+```
+Off-chain indexers or front-ends can subscribe to these events to visualize state changes in real time.
 ## 6. Technical Considerations
-
 ### 6.1 Gas Costs & Scalability
-
-- Storing large maps on-chain is costly.  
-- Mitigations:
-  - Use a Merkle root or compressed data structure.  
-  - Consider deploying on Layer-2 (Arbitrum, Optimism, zkSync, Polygon) for lower fees.
-
+Merkle proofs for each tile are relatively cheap, but storing large arrays on-chain is expensive.
+Consider compressing tile data or using an L2 (like StarkNet, Optimism, Arbitrum, etc.) to reduce costs.
+The final or periodic states can still be anchored on Ethereum for permanence.
 ### 6.2 Randomness Sources
-
-- For dynamic obstacles or procedural generation, a secure random source (e.g., Chainlink VRF) may be needed.  
-- For a purely conceptual project, blockhash-based pseudo-randomness might suffice, albeit less secure.
-
+If obstacles or events require randomness, consider Chainlink VRF or blockhash-based pseudo-randomness.
+True unpredictability might be valuable for dynamic obstacles or emergent gameplay.
 ### 6.3 NFT Metadata Updates & Marketplace Caching
-
-- Some NFT marketplaces cache metadata. You might need to “refresh” or rely on platforms that support dynamic metadata.  
-- Make sure your contract’s `tokenURI()` is designed to reflect real-time game state.
-
+Some marketplaces cache metadata. Refreshing may be needed to display updated states.
+Ensure your tokenURI() logic efficiently encodes the SVG for every state change.
 ### 6.4 Security Concerns
-
-- Guard against fake Merkle proofs or malicious moves.  
-- Verify collisions carefully.  
-- For zero-knowledge proofs, ensure the circuit or proof system is correct and unexploitable.
-
----
-
+Proof Verification: Must properly validate Merkle/zk proofs so no one can inject fraudulent tiles.
+Collision & Movement: Ensure coordinates aren’t spoofed.
+ZK Implementation: If using zero-knowledge, your circuits and proof system must be robust against exploits.
+### 6.5 StarkNet or Other L2 Options
+StarkNet natively uses STARK proofs, making it ideal for heavy or complex zero-knowledge logic.
+Cairo (StarkNet’s language) is specifically designed for ZK-friendliness but has a learning curve.
+Ultimately, your final “state commitments” could be anchored on Ethereum to ensure the artwork’s longevity.
 ## 7. Potential Extensions & Front-Ends
+Custom UIs
 
-- **Custom UIs**: Anyone can build a graphical or even text-based front-end that reads the on-chain state.  
-- **Level Editing**: Allow a community or DAO to propose expansions to the map.  
-- **Forking**: The open-source nature lets others replicate or remix the core concept.
+Anyone can render the same underlying data with a different art style—pixel art, ASCII, top-down, isometric, etc.
+Level Editing
 
----
+A DAO or community might propose expansions or patches to the map, continuing the game’s narrative.
+Forking
 
+Because it’s open-source, new creators can remix or build spin-offs with alternative mechanics or worlds.
 ## 8. Implementation Roadmap
+### 8.1 Phase 1: Prototype
+Deploy minimal HitboxGame + HitboxNFT on a testnet (e.g., Goerli, or an L2 testnet).
+Use a small map (e.g., 8×8 or 16×16) with a simple hashed reference (not full ZK).
+Validate the communal control concept: do people enjoy “Twitch Plays” style interactions?
+### 8.2 Phase 2: Full Deployment
+Scalable ZK Integration
 
-1. **Proof-of-Concept**  
-   - Implement a minimal `HitboxGame` and `HitboxNFT` on a testnet with a small grid.  
-   - Store or hardcode a simple 8×8 map as a demo.
+Migrate the project to or incorporate an L2 like StarkNet for advanced zero-knowledge or heavier computations.
+Periodically anchor state on Ethereum for finality and permanence.
+Expanded Map & Dynamic Obstacles
 
-2. **Merkle / ZK Integration**  
-   - Scale the map, hiding most of it via a Merkle root or zk approach.  
-   - Reveal new segments only when the character explores them.
+Introduce a large hidden world (512×512 or more).
+Add time-based or random obstacle movements for richer gameplay.
+Final Ethereum Contract
 
-3. **Dynamic Obstacles**  
-   - Add timed or turn-based patterns for obstacle movement.
-
-4. **Full On-Chain SVG**  
-   - Enhance the `tokenURI()` to generate a robust SVG, perhaps with additional styling or color coding.  
-   - Verify that the displayed window updates consistently.
-
-5. **UI / Community Launch**  
-   - Build a front-end with Web3 integration.  
-   - Mint the initial NFTs on a testnet and let holders interact.  
-   - Gather feedback, refine logic, then consider mainnet or L2 deployment.
-
----
-
+Release the canonical version on Ethereum mainnet, ensuring the art installation remains accessible indefinitely.
+All proofs or rollup data from StarkNet can settle to Ethereum, preserving the game’s state for posterity.
 ## 9. FAQ / Common Questions
+Why not store the entire map on-chain?
 
-1. **Why store the game on-chain?**  
-   Immutability and trustless verification align with the conceptual spirit of decentralized, verifiable art.
+Storing large arrays is prohibitively expensive. Commitments (Merkle roots, ZK proofs) minimize on-chain storage while keeping authenticity verifiable.
+How do I see unrevealed tiles?
 
-2. **How do I see the hidden world if it’s unrevealed?**  
-   You can’t, unless you hold valid proofs. It’s part of the “mystery” concept—knowing something exists without seeing it all at once.
+Someone (the user/front-end) must provide the tile data + proof. If valid, the contract marks it revealed. Without that proof, it remains hidden.
+What if I want a purely private map?
 
-3. **Why use zero-knowledge proofs?**  
-   They allow proving the authenticity of unrevealed parts without exposing them in plain text.
+Zero-knowledge approaches can hide tile details while still proving correctness. This may require more advanced circuits or an L2 specialized in ZK (like StarkNet).
+How do I handle dynamic metadata on NFT marketplaces?
 
-4. **Does this scale for large maps?**  
-   Potentially, but it’s resource-intensive. Layer-2s or off-chain data plus on-chain proofs might be necessary.
+Many marketplaces cache data. You might rely on a metadata “refresh” button, or certain platforms that honor dynamic metadata more readily.
+Why eventually deploy on Ethereum?
 
-5. **Can I build my own front-end or expand the game?**  
-   Absolutely. The system is open-source and intended for creative reinterpretation.
+Ethereum has historical significance and is widely considered the most “permanent” chain. Anchoring your final state or storing your final contract on Ethereum helps preserve the art for the long term.
+## 10. Conclusion & Next Steps
+Hitbox explores the intersection of decentralized gaming, conceptual art, and cryptographic proofs. By combining on-chain logic, interactive NFT mechanics, and a hidden-but-provable world, it aims to spark curiosity, collaboration, and creativity.
 
----
-
-## Conclusion
-
-**Hitbox** is more than a blockchain game; it’s an evolving artwork and a communal experience. By blending **smart contract logic**, **on-chain SVG rendering**, and **cryptographic proofs**, it pushes the boundaries of decentralized, collaborative art.
-
-### Next Steps / How to Contribute
-
-- **Review the spec**: Suggest clarifications or improvements.  
-- **Try it out**: Experiment with a local or testnet deployment.  
-- **Extend or fork**: Propose front-end designs, expansions, or alternative mechanics.  
-
-**Thank you for exploring Hitbox!** If you have questions or want to contribute, reach out via [contact info or GitHub issues].
-```
+How You Can Contribute
+Review & Comment: Open issues or pull requests with ideas or improvements.
+Try the Prototype: Deploy a local or testnet version. Experiment with tile reveals, collisions, and NFT movement rights.
+Extend or Fork: Build new front-ends, add new lore, or spin off your own cryptographic world.
+Join the Conversation: Discuss on Discord or social platforms. Community input is key to shaping the final deployment.
+Thank you for exploring Hitbox!
