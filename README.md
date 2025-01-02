@@ -1,7 +1,7 @@
 # HITBOX: A Conceptual On-Chain Platformer
 
-**Authors**: [Your Name]  
-**Date**: [Date]
+**Authors**: raulonastool
+**Date**: 12/31/2024
 
 ---
 
