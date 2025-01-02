@@ -283,16 +283,19 @@ Final Ethereum Contract
 Release the canonical version on Ethereum mainnet, ensuring the art installation remains accessible indefinitely.
 All proofs or rollup data from StarkNet can settle to Ethereum, preserving the game’s state for posterity.
 ## 9. FAQ / Common Questions
-Why not store the entire map on-chain?
+**Why not store the entire map on-chain?**
 
 Storing large arrays is prohibitively expensive. Commitments (Merkle roots, ZK proofs) minimize on-chain storage while keeping authenticity verifiable.
-How do I see unrevealed tiles?
+
+**How do I see unrevealed tiles?**
 
 Someone (the user/front-end) must provide the tile data + proof. If valid, the contract marks it revealed. Without that proof, it remains hidden.
-What if I want a purely private map?
+
+**What if I want a purely private map?**
 
 Zero-knowledge approaches can hide tile details while still proving correctness. This may require more advanced circuits or an L2 specialized in ZK (like StarkNet).
-How do I handle dynamic metadata on NFT marketplaces?
+
+**How do I handle dynamic metadata on NFT marketplaces?**
 
 Many marketplaces cache data. You might rely on a metadata “refresh” button, or certain platforms that honor dynamic metadata more readily.
 Why eventually deploy on Ethereum?
@@ -301,7 +304,7 @@ Ethereum has historical significance and is widely considered the most “perman
 ## 10. Conclusion & Next Steps
 Hitbox explores the intersection of decentralized gaming, conceptual art, and cryptographic proofs. By combining on-chain logic, interactive NFT mechanics, and a hidden-but-provable world, it aims to spark curiosity, collaboration, and creativity.
 
-How You Can Contribute
+**How You Can Contribute**
 Review & Comment: Open issues or pull requests with ideas or improvements.
 Try the Prototype: Deploy a local or testnet version. Experiment with tile reveals, collisions, and NFT movement rights.
 Extend or Fork: Build new front-ends, add new lore, or spin off your own cryptographic world.
