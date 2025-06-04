@@ -138,7 +138,7 @@
 
 5. **On-Chain SVG Update**  
    - The `HitboxNFT` references `HitboxGame` state to build an updated 32×32 pixel window around the character.  
-   - The NFT’s `tokenURI()` returns a fresh **data:` SVG** for marketplaces.
+   - The NFT’s `tokenURI()` returns a fresh `data:`SVG for marketplaces.
 
 6. **Observing the Game**  
    - Anyone can watch the state changes or see the NFT updates.  
