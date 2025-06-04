@@ -232,7 +232,6 @@ Could be managed within moveCharacter().
 event CharacterMoved(uint256 x, uint256 y);
 event CollisionDetected(uint256 obstacleId);
 event TileRevealed(uint256 x, uint256 y);
----
 ```
 Off-chain indexers or front-ends can subscribe to these events to visualize state changes in real time.
 ## 6. Technical Considerations
