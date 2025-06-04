@@ -40,8 +40,9 @@
 8. [Implementation Roadmap](#implementation-roadmap)  
    1. [Phase 1: Prototype](#phase-1-prototype)  
    2. [Phase 2: Full Deployment](#phase-2-full-deployment)  
-9. [FAQ / Common Questions](#faq--common-questions)  
+9. [FAQ / Common Questions](#faq--common-questions)
 10. [Conclusion & Next Steps](#conclusion--next-steps)
+11. [Development](#development)
 
 ---
 
@@ -311,3 +312,48 @@ Try the Prototype: Deploy a local or testnet version. Experiment with tile revea
 Extend or Fork: Build new front-ends, add new lore, or spin off your own cryptographic world.
 Join the Conversation: Discuss on Discord or social platforms. Community input is key to shaping the final deployment.
 Thank you for exploring Hitbox!
+
+## 11. Development
+
+### Install Dependencies
+
+Run the following command once to install JavaScript packages:
+
+```bash
+npm install
+```
+
+### Compile Contracts
+
+Compile the Solidity contracts using Hardhat:
+
+```bash
+npx hardhat compile
+```
+
+### Run Tests
+
+Execute the test suite with:
+
+```bash
+npx hardhat test
+```
+
+### Deploy
+
+Deployment is handled by `scripts/deploy.js`:
+
+```bash
+npx hardhat run scripts/deploy.js --network <network>
+```
+
+The companion `scripts/interact.js` script contains minimal examples for interacting with a deployed instance.
+
+### Environment Variables
+
+The deploy script expects the following variables to be defined in your shell or a `.env` file:
+
+- `PRIVATE_KEY` – private key of the deploying account
+- `RPC_URL` – RPC endpoint for the target network
+
+If no environment variables are set, the script will use Hardhat's default local network.
