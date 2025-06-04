@@ -28,7 +28,7 @@ contract HitboxGame {
     struct TileReveal {
         uint256 x;
         uint256 y;
-        bytes32 tileData;   // arbitrary payload included in the Merkle tree
+        bytes32 tileData;   // payload committed in the Merkle tree
         bytes32[] proof;    // proof that (x,y,tileData) ∈ tree(worldRoot)
     }
 

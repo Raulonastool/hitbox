@@ -3,13 +3,18 @@ const { ethers } = require("hardhat");
 
 describe("HitboxGame", function () {
   let game;
+  let root;
 
   // Deploy a fresh game before each test
   beforeEach(async function () {
-    const root = ethers.keccak256(ethers.toUtf8Bytes("dummyRoot"));
+    root = ethers.keccak256(ethers.toUtf8Bytes("dummyRoot"));
     const Game = await ethers.getContractFactory("HitboxGame");
     game = await Game.deploy(root, 0, 0);   // start at (0,0)
     await game.waitForDeployment();
+  });
+
+  it("initializes worldRoot from constructor", async function () {
+    expect(await game.worldRoot()).to.equal(root);
   });
 
   it("starts at position (0,0)", async function () {
@@ -19,7 +24,7 @@ describe("HitboxGame", function () {
   });
 
   it("moves the character right by 1", async function () {
-    await (await game.move(1, 0)).wait();  // dx = +1, dy = 0  ⇒ Right
+    await (await game.move(1, 0)).wait();          // dx = +1, dy = 0  ⇒ Right
     const pos = await game.characterPosition();
     expect(pos[0]).to.equal(1n);
     expect(pos[1]).to.equal(0n);
