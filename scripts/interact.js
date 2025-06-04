@@ -1,1 +1,1 @@
-// Placeholder Script(s) to interact with the deployed contracts
+// Placeholder script to interact with the deployed contracts.
