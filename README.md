@@ -40,8 +40,9 @@
 8. [Implementation Roadmap](#implementation-roadmap)  
    1. [Phase 1: Prototype](#phase-1-prototype)  
    2. [Phase 2: Full Deployment](#phase-2-full-deployment)  
-9. [FAQ / Common Questions](#faq--common-questions)  
+9. [FAQ / Common Questions](#faq--common-questions)
 10. [Conclusion & Next Steps](#conclusion--next-steps)
+11. [Development](#development)
 
 ---
 
@@ -108,6 +109,7 @@
 - An ERC721 or ERC1155 contract that **mints** tokens to grant movement rights.  
 - Holds a dynamic **on-chain SVG** reflecting the game state.  
 - Marketplaces display the **Hitbox** NFT with updated imagery, showing the 32×32 camera view.
+- [Example metadata](metadata/example.json) shows the JSON fields used to encode the dynamic SVG data.
 
 ### 3.6 Hidden World + Zero-Knowledge
 - The full map or large segments remain hidden.  
@@ -138,7 +140,7 @@
 
 5. **On-Chain SVG Update**  
    - The `HitboxNFT` references `HitboxGame` state to build an updated 32×32 pixel window around the character.  
-   - The NFT’s `tokenURI()` returns a fresh **data:` SVG** for marketplaces.
+   - The NFT’s `tokenURI()` returns a fresh `data:`SVG for marketplaces.
 
 6. **Observing the Game**  
    - Anyone can watch the state changes or see the NFT updates.  
@@ -232,7 +234,6 @@ Could be managed within moveCharacter().
 event CharacterMoved(uint256 x, uint256 y);
 event CollisionDetected(uint256 obstacleId);
 event TileRevealed(uint256 x, uint256 y);
----
 ```
 Off-chain indexers or front-ends can subscribe to these events to visualize state changes in real time.
 ## 6. Technical Considerations
@@ -311,3 +312,48 @@ Try the Prototype: Deploy a local or testnet version. Experiment with tile revea
 Extend or Fork: Build new front-ends, add new lore, or spin off your own cryptographic world.
 Join the Conversation: Discuss on Discord or social platforms. Community input is key to shaping the final deployment.
 Thank you for exploring Hitbox!
+
+## 11. Development
+
+### Install Dependencies
+
+Run the following command once to install JavaScript packages:
+
+```bash
+npm install
+```
+
+### Compile Contracts
+
+Compile the Solidity contracts using Hardhat:
+
+```bash
+npx hardhat compile
+```
+
+### Run Tests
+
+Execute the test suite with:
+
+```bash
+npx hardhat test
+```
+
+### Deploy
+
+Deployment is handled by `scripts/deploy.js`:
+
+```bash
+npx hardhat run scripts/deploy.js --network <network>
+```
+
+The companion `scripts/interact.js` script contains minimal examples for interacting with a deployed instance.
+
+### Environment Variables
+
+The deploy script expects the following variables to be defined in your shell or a `.env` file:
+
+- `PRIVATE_KEY` – private key of the deploying account
+- `RPC_URL` – RPC endpoint for the target network
+
+If no environment variables are set, the script will use Hardhat's default local network.

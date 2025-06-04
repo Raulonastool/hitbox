@@ -1,0 +1,10 @@
+{
+  "name": "Hitbox Game NFT Example",
+  "description": "Sample metadata illustrating fields returned by tokenURI(). The image is dynamically generated as an on-chain SVG.",
+  "image": "data:image/svg+xml;base64,{{DYNAMIC_SVG_BASE64}}",
+  "attributes": [
+    {"trait_type": "character_x", "value": 0},
+    {"trait_type": "character_y", "value": 0},
+    {"trait_type": "tiles_revealed", "value": 0}
+  ]
+}
