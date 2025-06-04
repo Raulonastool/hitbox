@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /**
  * @title HitboxGame
- * @notice Minimal on-chain game world that:
- *         • tracks a single character position  
- *         • stores obstacles and detects collisions  
- *         • lets callers reveal map tiles by Merkle proof  
- *         • emits events so front-ends can follow state off-chain
+ * @notice Minimal on-chain game world that
+ *         • tracks a single character position
+ *         • stores obstacles and detects collisions
+ *         • lets callers reveal map tiles by Merkle proof
+ *         • emits events for off-chain front-ends
  */
 contract HitboxGame {
     // -----------------------------------------------------------------------
@@ -28,8 +28,8 @@ contract HitboxGame {
     struct TileReveal {
         uint256 x;
         uint256 y;
-        bytes32 tileData;   // arbitrary per-tile payload committed in the Merkle tree
-        bytes32[] proof;    // proof that (x,y,tileData) is in the tree rooted at worldRoot
+        bytes32 tileData;   // arbitrary payload included in the Merkle tree
+        bytes32[] proof;    // proof that (x,y,tileData) ∈ tree(worldRoot)
     }
 
     enum Direction {
@@ -43,10 +43,10 @@ contract HitboxGame {
     // Immutable & storage
     // -----------------------------------------------------------------------
 
-    bytes32 public immutable worldRoot;          // commitment to the hidden world
+    bytes32 public immutable worldRoot;          // commitment to the hidden map
     Position public characterPosition;           // player position
 
-    mapping(uint256 => Obstacle) public obstacles;   // up to 256 obstacles hard-coded
+    mapping(uint256 => Obstacle) public obstacles;   // up to 256 obstacles
     mapping(bytes32 => bool) public revealedTiles;   // (x,y) → revealed?
 
     // -----------------------------------------------------------------------
@@ -90,7 +90,7 @@ contract HitboxGame {
         // Collision check
         uint256 collided = _checkCollision(newPos);
         if (collided != type(uint256).max) {
-            characterPosition = Position(0, 0);          // simple reset on collision
+            characterPosition = Position(0, 0);          // reset on collision
             emit CollisionDetected(collided);
         } else {
             characterPosition = newPos;
@@ -111,11 +111,11 @@ contract HitboxGame {
     }
 
     // -----------------------------------------------------------------------
-    // Convenience wrappers (kept from the simpler branch)
+    // Convenience wrappers
     // -----------------------------------------------------------------------
 
     /**
-     * @notice Move by signed deltas (−1, 0, +1). Useful for joystick-style UIs.
+     * @notice Move by signed deltas (−1, 0, +1). Handy for joystick UIs.
      */
     function move(int256 dx, int256 dy) external {
         Direction dir;
@@ -130,8 +130,8 @@ contract HitboxGame {
     }
 
     /**
-     * @notice Mark a tile revealed without a Merkle proof—handy for testing.
-     *         In production, prefer `moveCharacter` with valid proofs.
+     * @notice Mark a tile as revealed without a Merkle proof—useful in local tests.
+     *         In production, prefer `moveCharacter` with proper proofs.
      */
     function reveal(uint256 x, uint256 y) external {
         bytes32 key = _tileKey(x, y);
