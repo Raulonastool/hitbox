@@ -108,6 +108,7 @@
 - An ERC721 or ERC1155 contract that **mints** tokens to grant movement rights.  
 - Holds a dynamic **on-chain SVG** reflecting the game state.  
 - Marketplaces display the **Hitbox** NFT with updated imagery, showing the 32×32 camera view.
+- [Example metadata](metadata/example.json) shows the JSON fields used to encode the dynamic SVG data.
 
 ### 3.6 Hidden World + Zero-Knowledge
 - The full map or large segments remain hidden.  
