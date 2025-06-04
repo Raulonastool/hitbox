@@ -3,44 +3,39 @@ const { ethers } = require("hardhat");
 
 describe("HitboxGame", function () {
   let game;
-  let owner, user;
-  const validTile = ethers.utils.toUtf8Bytes("validTile");
 
+  // Deploy a fresh game before each test
   beforeEach(async function () {
-    [owner, user] = await ethers.getSigners();
+    const root = ethers.keccak256(ethers.toUtf8Bytes("dummyRoot"));
     const Game = await ethers.getContractFactory("HitboxGame");
-    game = await Game.deploy();
-    await game.deployed();
+    game = await Game.deploy(root, 0, 0);   // start at (0,0)
+    await game.waitForDeployment();
   });
 
-  it("allows authorized movement and tile reveal", async function () {
-    await game.authorize(owner.address);
-    await expect(game.move(3, validTile))
-      .to.emit(game, "CharacterMoved")
-      .withArgs(1, 0);
-    const pos = await game.getPosition();
-    expect(pos[0]).to.equal(1);
-    expect(await game.revealed(1, 0)).to.equal(true);
+  it("starts at position (0,0)", async function () {
+    const pos = await game.characterPosition(); // tuple [x, y]
+    expect(pos[0]).to.equal(0n);
+    expect(pos[1]).to.equal(0n);
   });
 
-  it("reverts unauthorized moves", async function () {
-    await expect(game.connect(user).move(3, validTile)).to.be.revertedWith(
-      "Not authorized"
-    );
+  it("moves the character right by 1", async function () {
+    await (await game.move(1, 0)).wait();  // dx = +1, dy = 0  ⇒ Right
+    const pos = await game.characterPosition();
+    expect(pos[0]).to.equal(1n);
+    expect(pos[1]).to.equal(0n);
   });
 
-  it("resets position on collision", async function () {
-    await game.authorize(owner.address);
-    // First move right into obstacle at (1,0)
-    await game.move(3, validTile);
-    const pos = await game.getPosition();
-    expect(pos[0]).to.equal(0);
-    expect(pos[1]).to.equal(0);
+  it("does not move below zero", async function () {
+    // Attempt to move left while already at x = 0
+    await (await game.move(-1, 0)).wait();
+    const pos = await game.characterPosition();
+    expect(pos[0]).to.equal(0n);
+    expect(pos[1]).to.equal(0n);
   });
 
-  it("reverts on invalid proof", async function () {
-    await game.authorize(owner.address);
-    const bad = ethers.utils.toUtf8Bytes("badTile");
-    await expect(game.move(3, bad)).to.be.revertedWith("Invalid proof");
+  it("stores revealed tiles", async function () {
+    await (await game.reveal(5, 6)).wait();
+    const key = ethers.solidityPackedKeccak256(["uint256", "uint256"], [5, 6]);
+    expect(await game.revealedTiles(key)).to.equal(true);
   });
 });

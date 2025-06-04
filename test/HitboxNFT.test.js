@@ -2,28 +2,45 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("HitboxNFT", function () {
-  let game, nft, owner;
-  const validTile = ethers.utils.toUtf8Bytes("validTile");
+  let game, nft, owner, other;
 
   beforeEach(async function () {
-    [owner] = await ethers.getSigners();
+    [owner, other] = await ethers.getSigners();
+
+    // Deploy HitboxGame (root = keccak256("dummyRoot"), start at 0,0)
     const Game = await ethers.getContractFactory("HitboxGame");
-    game = await Game.deploy();
-    await game.deployed();
+    const root = ethers.keccak256(ethers.toUtf8Bytes("dummyRoot"));
+    game = await Game.deploy(root, 0, 0);
+    await game.waitForDeployment();
 
+    // Deploy HitboxNFT
     const NFT = await ethers.getContractFactory("HitboxNFT");
-    nft = await NFT.deploy(game.address, "ipfs://base");
-    await nft.deployed();
-
-    await game.authorize(owner.address);
-    await nft.mint(owner.address, 1);
+    nft = await NFT.deploy(await game.getAddress());
+    await nft.waitForDeployment();
   });
 
-  it("returns dynamic tokenURI", async function () {
-    await game.move(3, validTile); // move right to (1,0) but will reset
-    const uri = await nft.tokenURI(1);
-    expect(uri).to.contain("ipfs://base/1");
-    expect(uri).to.contain("x=0");
-    expect(uri).to.contain("y=0");
+  it("mints an NFT to the sender", async function () {
+    await nft.connect(owner).mint();          // tokenId 0
+    expect(await nft.ownerOf(0n)).to.equal(owner.address);
+    expect(await nft.nextId()).to.equal(1n);
+  });
+
+  it("mints to another account", async function () {
+    await nft.connect(other).mint();          // tokenId 0
+    expect(await nft.ownerOf(0n)).to.equal(other.address);
+  });
+
+  it("allows multiple mints and tracks nextId", async function () {
+    await nft.connect(owner).mint();          // tokenId 0
+    await nft.connect(owner).mint();          // tokenId 1
+    expect(await nft.ownerOf(0n)).to.equal(owner.address);
+    expect(await nft.ownerOf(1n)).to.equal(owner.address);
+    expect(await nft.nextId()).to.equal(2n);
+  });
+
+  it("returns a base64-encoded JSON data URI", async function () {
+    await nft.connect(owner).mint();          // tokenId 0
+    const uri = await nft.tokenURI(0);
+    expect(uri.startsWith("data:application/json;base64,")).to.be.true;
   });
 });
