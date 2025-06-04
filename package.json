@@ -1,0 +1,11 @@
+{
+  "name": "hitbox",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "hardhat": "^2.21.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0"
+  }
+}
