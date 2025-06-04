@@ -8,15 +8,11 @@ interface IHitboxGame {
     function characterPosition() external view returns (uint256, uint256);
 }
 
-/**
- * @title HitboxNFT
- * @notice Simple ERC721 token that renders a 32x32 SVG view of the game.
- */
 contract HitboxNFT is ERC721 {
     IHitboxGame public immutable game;
     uint256 public nextId;
 
-    constructor(address gameAddress) ERC721("Hitbox", "HBOX") {
+    constructor(address gameAddress) ERC721("HitboxNFT", "HIT") {
         game = IHitboxGame(gameAddress);
     }
 
@@ -26,41 +22,48 @@ contract HitboxNFT is ERC721 {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "nonexistent token");
+        require(_exists(tokenId), "ERC721: query for nonexistent token");
         (uint256 x, uint256 y) = game.characterPosition();
         string memory svg = _buildSvg(x, y);
         string memory image = string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
-        string memory json = string.concat('{"name":"Hitbox","description":"On-chain game","image":"', image, '"}');
+        string memory json = string.concat(
+            '{"name":"Hitbox #', _toString(tokenId),
+            '","description":"On-chain game","image":"', image, '"}'
+        );
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
+
+    // --- helpers below ---
+
     function _buildSvg(uint256 x, uint256 y) internal pure returns (string memory) {
-        string memory rect = string(abi.encodePacked("<rect fill='red' x='", _toString(x % 32), "' y='", _toString(y % 32), "' width='1' height='1'/>"));
-        return string(abi.encodePacked(
-            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>",
-            "<rect width='32' height='32' fill='black'/>",
-            rect,
-            "</svg>"
-        ));
+        string memory rect = string(
+            abi.encodePacked(
+                "<rect fill='red' x='", _toString(x % 32),
+                "' y='", _toString(y % 32),
+                "' width='1' height='1'/>"
+            )
+        );
+        return string(
+            abi.encodePacked(
+                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>",
+                "<rect width='32' height='32' fill='black'/>",
+                rect,
+                "</svg>"
+            )
+        );
     }
 
-
     function _toString(uint256 value) internal pure returns (string memory) {
-        if (value == 0) {
-            return "0";
-        }
+        if (value == 0) return "0";
         uint256 temp = value;
         uint256 digits;
-        while (temp != 0) {
-            digits++;
-            temp /= 10;
-        }
+        while (temp != 0) { digits++; temp /= 10; }
         bytes memory buffer = new bytes(digits);
         while (value != 0) {
-            digits -= 1;
+            digits--;
             buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
             value /= 10;
         }
         return string(buffer);
     }
 }
-

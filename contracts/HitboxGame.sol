@@ -5,72 +5,99 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /**
  * @title HitboxGame
- * @notice Minimal game contract storing a Merkle root of the hidden world.
- *         Handles movement, obstacle collisions and tile reveal proofs.
+ * @notice Minimal on-chain game world that:
+ *         • tracks a single character position  
+ *         • stores obstacles and detects collisions  
+ *         • lets callers reveal map tiles by Merkle proof  
+ *         • emits events so front-ends can follow state off-chain
  */
 contract HitboxGame {
-    bytes32 public worldRoot;
+    // -----------------------------------------------------------------------
+    // Types
+    // -----------------------------------------------------------------------
 
     struct Position {
         uint256 x;
         uint256 y;
     }
 
-    Position public characterPosition;
-
     struct Obstacle {
         Position pos;
     }
 
-    mapping(uint256 => Obstacle) public obstacles;
+    struct TileReveal {
+        uint256 x;
+        uint256 y;
+        bytes32 tileData;   // arbitrary per-tile payload committed in the Merkle tree
+        bytes32[] proof;    // proof that (x,y,tileData) is in the tree rooted at worldRoot
+    }
 
-    // Track revealed tiles using a hash of coordinates
-    mapping(bytes32 => bool) public revealedTiles;
+    enum Direction {
+        Left,
+        Right,
+        Up,
+        Down
+    }
+
+    // -----------------------------------------------------------------------
+    // Immutable & storage
+    // -----------------------------------------------------------------------
+
+    bytes32 public immutable worldRoot;          // commitment to the hidden world
+    Position public characterPosition;           // player position
+
+    mapping(uint256 => Obstacle) public obstacles;   // up to 256 obstacles hard-coded
+    mapping(bytes32 => bool) public revealedTiles;   // (x,y) → revealed?
+
+    // -----------------------------------------------------------------------
+    // Events
+    // -----------------------------------------------------------------------
 
     event CharacterMoved(uint256 x, uint256 y);
     event CollisionDetected(uint256 obstacleId);
     event TileRevealed(uint256 x, uint256 y);
 
+    // -----------------------------------------------------------------------
+    // Constructor
+    // -----------------------------------------------------------------------
+
+    /**
+     * @param _worldRoot Merkle root of the world tiles
+     * @param startX     initial X coordinate
+     * @param startY     initial Y coordinate
+     */
     constructor(bytes32 _worldRoot, uint256 startX, uint256 startY) {
         worldRoot = _worldRoot;
         characterPosition = Position(startX, startY);
     }
 
-    enum Direction { Left, Right, Up, Down }
-
-    struct TileReveal {
-        uint256 x;
-        uint256 y;
-        bytes32 tileData;
-        bytes32[] proof;
-    }
+    // -----------------------------------------------------------------------
+    // Gameplay
+    // -----------------------------------------------------------------------
 
     /**
-     * @notice Move the character one tile in the specified direction.
-     *         Verifies any supplied tile proofs and emits relevant events.
+     * @notice Move one tile in `dir`, handle collisions, and verify any tile
+     *         reveal proofs submitted alongside the move.
      */
-    function moveCharacter(Direction dir, TileReveal[] calldata reveals) external {
+    function moveCharacter(Direction dir, TileReveal[] calldata reveals) public {
         Position memory newPos = characterPosition;
 
-        if (dir == Direction.Left) {
-            if (newPos.x > 0) newPos.x -= 1;
-        } else if (dir == Direction.Right) {
-            newPos.x += 1;
-        } else if (dir == Direction.Up) {
-            if (newPos.y > 0) newPos.y -= 1;
-        } else if (dir == Direction.Down) {
-            newPos.y += 1;
-        }
+        if (dir == Direction.Left && newPos.x > 0)       newPos.x -= 1;
+        else if (dir == Direction.Right)                 newPos.x += 1;
+        else if (dir == Direction.Up && newPos.y > 0)    newPos.y -= 1;
+        else if (dir == Direction.Down)                  newPos.y += 1;
 
+        // Collision check
         uint256 collided = _checkCollision(newPos);
         if (collided != type(uint256).max) {
-            characterPosition = Position(0, 0);
+            characterPosition = Position(0, 0);          // simple reset on collision
             emit CollisionDetected(collided);
         } else {
             characterPosition = newPos;
         }
 
-        for (uint256 i; i < reveals.length; i++) {
+        // Verify tile reveals
+        for (uint256 i = 0; i < reveals.length; i++) {
             if (_verifyTile(reveals[i])) {
                 bytes32 key = _tileKey(reveals[i].x, reveals[i].y);
                 if (!revealedTiles[key]) {
@@ -83,11 +110,40 @@ contract HitboxGame {
         emit CharacterMoved(characterPosition.x, characterPosition.y);
     }
 
+    // -----------------------------------------------------------------------
+    // Convenience wrappers (kept from the simpler branch)
+    // -----------------------------------------------------------------------
+
     /**
-     * @notice Simple collision check against stored obstacles.
-     * @return obstacleId ID that was hit or max uint if none.
+     * @notice Move by signed deltas (−1, 0, +1). Useful for joystick-style UIs.
      */
-    function _checkCollision(Position memory pos) internal view returns (uint256 obstacleId) {
+    function move(int256 dx, int256 dy) external {
+        Direction dir;
+        if (dx < 0)      dir = Direction.Left;
+        else if (dx > 0) dir = Direction.Right;
+        else if (dy < 0) dir = Direction.Up;
+        else if (dy > 0) dir = Direction.Down;
+        else revert("zero-move");
+
+        TileReveal[] memory empty;
+        moveCharacter(dir, empty);
+    }
+
+    /**
+     * @notice Mark a tile revealed without a Merkle proof—handy for testing.
+     *         In production, prefer `moveCharacter` with valid proofs.
+     */
+    function reveal(uint256 x, uint256 y) external {
+        bytes32 key = _tileKey(x, y);
+        revealedTiles[key] = true;
+        emit TileRevealed(x, y);
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal helpers
+    // -----------------------------------------------------------------------
+
+    function _checkCollision(Position memory pos) internal view returns (uint256) {
         for (uint256 i = 0; i < 256; i++) {
             if (obstacles[i].pos.x == pos.x && obstacles[i].pos.y == pos.y) {
                 return i;
@@ -105,4 +161,3 @@ contract HitboxGame {
         return keccak256(abi.encodePacked(x, y));
     }
 }
-
